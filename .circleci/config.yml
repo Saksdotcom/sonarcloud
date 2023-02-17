@@ -3,15 +3,64 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: 'circleci/openjdk:11-jdk'
+      - image: cimg/openjdk:11.0.16
+      # - image: circleci/node:14
+    
     steps:
       - checkout
       - run:
-          name: Analyze on SonarCloud
-          command: mvn verify sonar:sonar -Dsonar.projectKey=Saksdotcom_sonarcloud
-
-workflows:
-  main:
-    jobs:
-      - build:
-          context: SonarCloud
+         command: |
+          cd /home/circleci/project/
+          yum update
+          yum install -y jq checkstyle
+          wget http://www-eu.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
+          tar xzf apache-maven-3.5.4-bin.tar.gz
+          ln -s apache-maven-3.5.4 maven
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.3.0.1492-linux.zip
+          unzip ./sonar-scanner-cli-3.3.0.1492-linux.zip
+          export PATH=$PATH:/sonar-scanner-3.3.0.1492-linux/bin/
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - run:
+          name: Run tests
+          command: npm test
+      # - run:
+      #     name: Install SonarScanner
+      #     command: |
+      #       wget http://www-eu.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
+      #       tar xzf apache-maven-3.5.4-bin.tar.gz
+      #       rm apache-maven-3.5.4-bin.tar.gz
+      #       ln -s apache-maven-3.5.4 maven
+      #       wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.5.0.2216-linux.zip
+      #       unzip sonar-scanner-cli-4.5.0.2216-linux.zip
+      #       rm sonar-scanner-cli-4.5.0.2216-linux.zip
+      #       export PATH=$PATH:/sonar-scanner-3.3.0.1492-linux/bin/
+      #       # cd /home/circleci/project/
+      #       cd /home/circleci/project/
+      #       ls -lrt /home/circleci/project           
+      #       mvn clean install
+      #       mvn clean package
+      #       # mvn install -DskipTests
+      #       mvn test
+      #       mvn checkstyle:checkstyle
+      #       # curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=$Project >result.json
+      #       ls -lrt /home/circleci/project/target/
+      #       # mvn install -DskipTests
+      #       # mvn sonar:sonar
+      #       # ls -lrt /home/circleci/project/
+      - run:
+          name: Analyze with SonarCloud
+          command: |
+            ./sonar-scanner-4.5.0.2216-linux/bin/sonar-scanner \
+              -Dsonar.projectKey=Saksdotcom \
+              -Dsonar.organization=Saksdotcom \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.login=1db1b549abda6130a920bf0f301594d025b9927e \
+             # -Dsonar.sources=src/main/java/com/visualpathit/account \
+             # -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+              # -Dsonar.junit.reportsPath=target/surefire-reports/ \
+              # -Dsonar.jacoco.reportsPath=target/jacoco.exec 
+              # ls -lrt /home/circleci/project/target/my-reports
+              # ls -lrt /home/circleci/project/target/my-reports/jacoco-resources
