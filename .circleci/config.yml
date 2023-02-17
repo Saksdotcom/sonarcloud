@@ -7,16 +7,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Analyze with SonarCloud
-          command: |
-              -Dsonar.projectKey=Saksdotcom \
-              -Dsonar.organization=Saksdotcom \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=1db1b549abda6130a920bf0f301594d025b9927e \
+          name: Analyze on SonarCloud
+          command: mvn verify sonar:sonar -Dsonar.projectKey=Saksdotcom_sonarcloud
 
 workflows:
   main:
     jobs:
       - build:
-          context: SonarCloud 
+          context: SonarCloud
